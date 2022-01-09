@@ -1,5 +1,6 @@
 package com.example.flishlight;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
@@ -29,10 +30,14 @@ public class MainActivity extends AppCompatActivity {
     EditText time;
     TextView output;
     Context context = this;
+    private String cameraID;
+    private CameraManager cameraManager;
     boolean IsFlashAviable = false;
+    boolean isStartPressOnce = true;
 
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
                         IsFlashAviable = true;
+                        cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+                        try {
+                            cameraManager.setTorchMode(cameraID, true);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     @Override
@@ -61,12 +72,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public  void onStartPressed(View view){
-        if(IsFlashAviable){
-            CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-            //Add flashlight logic
-
-
+        if(IsFlashAviable && isStartPressOnce){
+            isStartPressOnce = false;
+            try {
+                cameraManager.setTorchMode(cameraID, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             int timeInMinutes = Integer.parseInt(time.getText().toString());
             new CountDownTimer(timeInMinutes * 60*1000, 1000) {
 
@@ -75,8 +89,13 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 public void onFinish() {
-
+                    try {
+                        cameraManager.setTorchMode(cameraID, false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+
             }.start();
         }
         else{
