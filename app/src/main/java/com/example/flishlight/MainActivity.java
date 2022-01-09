@@ -27,6 +27,7 @@ import com.karumi.dexter.listener.single.PermissionListener;
 import java.security.Policy;
 
 public class MainActivity extends AppCompatActivity {
+    CountDownTimer waitTimer;
     EditText time;
     TextView output;
     Context context = this;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             int timeInMinutes = Integer.parseInt(time.getText().toString());
-            new CountDownTimer(timeInMinutes * 60*1000, 1000) {
+            waitTimer = new CountDownTimer(timeInMinutes * 60*1000, 1000) {
 
                 public void onTick(long millisUntilFinished) {
                     output.setText("seconds remaining: " + millisUntilFinished / 1000);
@@ -105,6 +106,20 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void onStopPressed(View view){
+        isStartPressOnce = true;
+        try {
+            cameraManager.setTorchMode(cameraID, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(waitTimer != null) {
+            waitTimer.cancel();
+            waitTimer = null;
+            output.setText("Stoped");
+        }
     }
 
 }
